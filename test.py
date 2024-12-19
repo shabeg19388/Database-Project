@@ -41,7 +41,7 @@ sys_message = """Give the SQL query needed to resolve a user input. There is no 
 
                 Return the resulting query in compact SQL.
                 """
-def getGPTcompletion(query : str)  -> str:
+def getGPTCompletion(query : str)  -> str:
     completion = GPTClient.chat.completions.create(model = 'gpt-4o-mini',
         messages = [
             {
@@ -93,7 +93,7 @@ def getGeminiCompletion(query : str, columns : list)  -> str:
 
 @app.post('/query')
 def query():
-    GPTQuery = getGPTcompletion(request.json['query'])
+    GPTQuery = getGPTCompletion(request.json['query'])
 
     #After querying the data we want to extract the column names and send it to the gemini query. Thinking about bias: We need to make sure that the prompt we are giving Gemini isn't too biased. My solution: We try all approaches have gemini come up with its own query, give the column names from gpt to gemini, give only the number of columns from gemini. For the intersection and union we can just use the query where we give the column names.
     
@@ -108,21 +108,98 @@ def query():
 def test():
     print(request.json)
     gpt = [
-        {
-            "customer_id": 1,
-            "customer_unique_id": "c1a1e1f1-4d2b-4632-bbbd-888f1c2a2d2e",
-            "zip_code": "90210",
-            "city": "Beverly Hills",
-            "state": "CA"
-        },
-        {
-            "customer_id": 2,
-            "customer_unique_id": "a9b2c3d4-1234-5678-9101-1a2b3c4d5e6f",
-            "zip_code": "10001",
-            "city": "New York",
-            "state": "NY"
-        }
-    ]
+  {
+    "review_id": "b1f0fdd0-1a01-4e67-bd7c-3d5e0c3e3a5a",
+    "order_id": "e481f51cbdc54678b7cc49136f2d6af7",
+    "review_score": 5,
+    "review_comment_title": "Excellent!",
+    "review_comment_message": "The product exceeded my expectations.",
+    "review_creation_date": "2024-12-01",
+    "review_answer_timestamp": "2024-12-02T10:15:30"
+  },
+  {
+    "review_id": "c2e0fdd1-2b02-5f68-ce8d-4e6f1d4f4b6b",
+    "order_id": "f581g62dced65789c8dd59247g3e7bg8",
+    "review_score": 4,
+    "review_comment_title": "Very good",
+    "review_comment_message": "Satisfied with the purchase.",
+    "review_creation_date": "2024-12-03",
+    "review_answer_timestamp": "2024-12-04T11:20:45"
+  },
+  {
+    "review_id": "d3f1gde2-3c03-6g79-df9e-5f7g2e5g5c7c",
+    "order_id": "g682h73efef76890d9ee60358h4f8ch9",
+    "review_score": 3,
+    "review_comment_title": "Average",
+    "review_comment_message": "The product is okay, not great.",
+    "review_creation_date": "2024-12-05",
+    "review_answer_timestamp": "2024-12-06T12:25:50"
+  },
+  {
+    "review_id": "e4g2hef3-4d04-7h8a-eg0f-6g8h3f6h6d8d",
+    "order_id": "h783i84fgfg87901e0ff71469i5g9di0",
+    "review_score": 2,
+    "review_comment_title": "Not satisfied",
+    "review_comment_message": "The product did not meet my expectations.",
+    "review_creation_date": "2024-12-07",
+    "review_answer_timestamp": "2024-12-08T13:30:55"
+  },
+  {
+    "review_id": "f5h3igf4-5e05-8i9b-fh1g-7h9i4g7i7e9e",
+    "order_id": "i894j95ghgh98012f1gg82570j6h0ej1",
+    "review_score": 1,
+    "review_comment_title": "Very disappointed",
+    "review_comment_message": "The product was defective.",
+    "review_creation_date": "2024-12-09",
+    "review_answer_timestamp": "2024-12-10T14:35:00"
+  },
+  {
+    "review_id": "g6i4jhf5-6f06-9j0c-gi2h-8i0j5h8j8f0f",
+    "order_id": "j905k06hihi09123g2hh93681k7i1fk2",
+    "review_score": 5,
+    "review_comment_title": "Highly recommend",
+    "review_comment_message": "Fantastic product and service.",
+    "review_creation_date": "2024-12-11",
+    "review_answer_timestamp": "2024-12-12T15:40:05"
+  },
+  {
+    "review_id": "h7j5kig6-7g07-0k1d-hj3i-9j1k6i9k9g1g",
+    "order_id": "k016l17ijij10234h3ii04792l8j2gl3",
+    "review_score": 4,
+    "review_comment_title": "Good value",
+    "review_comment_message": "Worth the price.",
+    "review_creation_date": "2024-12-13",
+    "review_answer_timestamp": "2024-12-14T16:45:10"
+  },
+  {
+    "review_id": "i8k6ljg7-8h08-1l2e-ik4j-0k2l7j0l0h2h",
+    "order_id": "l127m28jkjk21345i4jj15803m9k3hm4",
+    "review_score": 3,
+    "review_comment_title": "It's okay",
+    "review_comment_message": "The product is average.",
+    "review_creation_date": "2024-12-15",
+    "review_answer_timestamp": "2024-12-16T17:50:15"
+  },
+  {
+    "review_id": "j9l7mkh8-9i09-2m3f-jl5k-1l3m8k1m1i3i",
+    "order_id": "m238n39klkl32456j5kk26914n0l4in5",
+    "review_score": 2,
+    "review_comment_title": "Could be better",
+    "review_comment_message": "Not what I expected.",
+    "review_creation_date": "2024-12-17",
+    "review_answer_timestamp": "2024-12-18T18:55:20"
+  },
+  {
+    "review_id": "k0m8nli9-0j10-3n4g-km6l-2m4n9l2n2j4j",
+    "order_id": "n349o40lmlm43567k6ll37025o1m5jo6",
+    "review_score": 1,
+    "review_comment_title": "Terrible experience",
+    "review_comment_message": "The product arrived damaged.",
+    "review_creation_date": "2024-12-19",
+    "review_answer_timestamp": "2024-12-20T19:00:25"
+  }
+]*5
+
     gemini = [
         {
             "order_id": 101,
@@ -213,7 +290,7 @@ def test():
             "city": "New York",
             "state": "NY"
         }
-    ]
+    ]*50
     response = {
         'gpt' : gpt,
         'gemini' : gemini,
