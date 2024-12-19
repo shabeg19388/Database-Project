@@ -5,6 +5,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.62.8",
     "cra-template": "1.2.0",
+    "primereact": "^10.8.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1"

@@ -1,0 +1,35 @@
+.p-inputtext-lg {
+    width: 700px;
+    height: 50px;
+}
+
+.p-button {
+    margin-left: 10px;
+    height: 50px;
+}
+
+main {
+    margin-left: 80px;
+    margin-right: 80px;
+}
+
+
+.p-treetable-tbody {
+    font-weight: 700;
+}
+
+.p-tabview {
+    padding-top : 20px;
+}
+
+.p-treetable-thead {
+    display : none
+}
+
+.queries-accordian{
+    margin-top : 10px;
+}
+
+.schema-accordian {
+    margin-top : 20px;
+}
