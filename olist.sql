@@ -234,28 +234,71 @@ DROP TEMPORARY TABLE temp_order_payments;
 
 /* Load data into order_reviews */
 -- Temporary table for order_reviews
+-- Disable strict mode to allow for flexibility in handling bad data
+SET sql_mode = '';
+
+-- Create a temporary table with the same structure as the target table
 CREATE TEMPORARY TABLE temp_order_reviews (
     review_id VARCHAR(200),
     order_id VARCHAR(200),
     review_score SMALLINT,
-    review_comment_title TEXT,
-    review_comment_message TEXT,
-    review_creation_date VARCHAR(200),
-    review_answer_timestamp VARCHAR(200)
+    review_comment_title TEXT NULL,
+    review_comment_message TEXT NULL,
+    review_creation_date DATETIME NULL,
+    review_answer_timestamp DATETIME NULL
 );
 
-LOAD DATA INFILE '/Users/bingo/Desktop/Olist/data/olist_order_reviews_dataset.csv'
+-- Load the data into the temporary table
+LOAD DATA INFILE '/Users/shabeggill/Desktop/Olist/data/olist_order_reviews_dataset.csv'
 INTO TABLE temp_order_reviews
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"' -- Handles fields optionally enclosed in double quotes
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(review_id, order_id, review_score, review_comment_title, review_comment_message, @review_creation_date, @review_answer_timestamp)
-SET review_creation_date = IF(STR_TO_DATE(@review_creation_date, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(@review_creation_date, '%Y-%m-%d %H:%i:%s'), NULL),
-    review_answer_timestamp = IF(STR_TO_DATE(@review_answer_timestamp, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(@review_answer_timestamp, '%Y-%m-%d %H:%i:%s'), NULL);
+IGNORE 1 ROWS -- Skip the header row
+(
+    review_id,
+    order_id,
+    review_score,
+    @review_comment_title, -- Handle empty values here
+    @review_comment_message, -- Handle empty values here
+    @review_creation_date,
+    @review_answer_timestamp
+)
+SET 
+    review_comment_title = IF(@review_comment_title = '', NULL, @review_comment_title), -- Replace empty strings with NULL
+    review_comment_message = IF(@review_comment_message = '', NULL, @review_comment_message), -- Replace empty strings with NULL
+    review_creation_date = IF(@review_creation_date REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$', 
+                              STR_TO_DATE(@review_creation_date, '%Y-%m-%d %H:%i:%s'), NULL), -- Validate date format
+    review_answer_timestamp = IF(@review_answer_timestamp REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$', 
+                                 STR_TO_DATE(@review_answer_timestamp, '%Y-%m-%d %H:%i:%s'), NULL); -- Validate date format
 
-INSERT IGNORE INTO order_reviews
-SELECT DISTINCT * FROM temp_order_reviews;
+-- Insert the cleaned data from the temporary table into the main table
+INSERT IGNORE INTO order_reviews (
+    review_id, 
+    order_id, 
+    review_score, 
+    review_comment_title, 
+    review_comment_message, 
+    review_creation_date, 
+    review_answer_timestamp
+)
+SELECT DISTINCT 
+    review_id, 
+    order_id, 
+    review_score, 
+    review_comment_title, 
+    review_comment_message, 
+    review_creation_date, 
+    review_answer_timestamp
+FROM temp_order_reviews;
+
+-- Drop the temporary table
 DROP TEMPORARY TABLE temp_order_reviews;
+
+-- Re-enable strict mode if necessary
+SET sql_mode = 'STRICT_TRANS_TABLES';
+
+
 
 -- Temporary table for order_items
 CREATE TEMPORARY TABLE temp_order_items (
@@ -283,8 +326,6 @@ DROP TEMPORARY TABLE temp_order_items;
 
 
 SHOW VARIABLES LIKE 'secure_file_priv';
+SELECT COUNT(*) FROM order_reviews;
+SELECT * FROM order_reviews;
 -- SET FOREIGN_KEY_CHECKS = 1; -- Re-enable foreign key constraints-- 
-
-SELECT COUNT(*) FROM geolocation;
--- Error Code: 1292. Incorrect datetime value: '2018-03-11 02:17:45' for column 'review_answer_timestamp' at row 3311
-
