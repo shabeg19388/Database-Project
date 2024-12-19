@@ -1,7 +1,7 @@
 import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
 export const QueryTree = ({data}) => {
-    const queries = {'GPT' : data.GPTQuery, 'Gemini' : data.GeminiQuery, 'Gemini + NumCol': data.GeminiNumQuery, 'Gemini + NameCol': data.GeminiNameQuery, 'Intersection' : data.IntersectionQuery, 'Union': data.UnionQuery}
+    const queries = {'GPT' : data.GPTQuery, 'Gemini' : data.GeminiQuery, 'Gemini + NumCol': data.NumQuery, 'Gemini + NameCol': data.NameQuery, 'Intersection' : data.IntersectionQuery, 'Union': data.UnionQuery}
     const nodes = Object.keys(queries).map((key, i) => ({
         key: i, 
         data: {name: key}, 

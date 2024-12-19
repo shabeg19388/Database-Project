@@ -11,13 +11,9 @@ CORS(app, origins = 'http://localhost:3000')
 GPTClient = OpenAI(api_key = os.environ['OPEN_API_KEY'])
 GeminiClient = OpenAI(api_key = os.environ['GEMINI_API_KEY'], base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
 
-def getGPTcompletion(query : str)  -> str:
-    #have to fix schema and add examples
-    completion = GPTClient.chat.completions.create(model = 'gpt-4o-mini',
-        messages = [
-            {
-                'role' : 'system',
-                'content' : """Give the SQL query needed to resolve a user input. There is no need for explanation or anything just return the query compatible with mySQL. 
+
+#have to fix schema and add examples also can add an example row from each table. Also fix schema in frontend.
+sys_message = """Give the SQL query needed to resolve a user input. There is no need for explanation or anything just return the query compatible with mySQL. 
                 The database is a Brazilian e-commerce database from O-List (in English). Only return the SQL query given the user input.
                 The schema for the database is:
                     "customers(customer_id [PK], customer_unique_id, zip_code [FK: geolocation.zip_code], city, state): Has customer id and address information. 
@@ -30,7 +26,7 @@ def getGPTcompletion(query : str)  -> str:
 
                     geolocation(zip_code [PK], lat, lang, city, state): Has location information for each zip code.
 
-                    product_category_name_translation(category_name [PK], category_name_english): Has translation for category from portugese to english.
+                    product_category_name_ translation(category_name [PK], category_name_english): Has translation for category from portugese to english.
 
                     products(product_id [PK], category_name [FK: product_category_name_translation.category_name], name_length, description_length, photo_qty, weight_g, length_cm, height_cm, width_cm): Has product information including category in portugese, product name length, product description length, number of photos, weight of item and dimensions of item.
 
@@ -42,7 +38,15 @@ def getGPTcompletion(query : str)  -> str:
 
                 If you think that the user input is outside the scope of this schema then throw an error out of scope. 
                 Convert the user input into an executable SQL query for the given database without any explanation.
+
+                Return the resulting query in compact SQL.
                 """
+def getGPTcompletion(query : str)  -> str:
+    completion = GPTClient.chat.completions.create(model = 'gpt-4o-mini',
+        messages = [
+            {
+                'role' : 'system',
+                'content' : sys_message
             },
             {
             'role' : 'user',
@@ -50,43 +54,41 @@ def getGPTcompletion(query : str)  -> str:
             }])
     return (completion.choices[0].message.content).replace('sql\n', '').replace('```','')
 
-def getGeminiCompletion(query : str, columns : str)  -> str:
-    completion = GeminiClient.chat.completions.create(model = 'gemini-1.5-flash',
+def getGeminiCompletion(query : str, columns : list)  -> str:
+    completion_base = GeminiClient.chat.completions.create(model = 'gemini-1.5-flash',
         messages = [
             {
                 'role' : 'system',
-                'content' : """Give the SQL query needed to resolve a user input. There is no need for explanation or anything just return the query compatible with mySQL. 
-                The database is a Brazilian e-commerce database from O-List (in English). Only return the SQL query given the user input.
-                The schema for the database is:
-                    "customers(customer_id [PK], customer_unique_id, zip_code [FK: geolocation.zip_code], city, state): Has customer id and address information. 
-
-                    orders(order_id [PK], customer_id [FK: customers.customer_id], order_status, order_purchase_timestamp, order_approved_at, order_delivered_carrier_date, order_delivered_customer_date, order_estimated_delivery_date): Has order information including customer, status of order, purchase time, approval time, delivery to carrier, delivery to customer, and estimated delivery date to customer.
-
-                    order_payments(order_id [FK: orders.order_id], payment_sequential, payment_type, payment_installments, payment_value): Has payment information for each order including installments and multiple payment methods (payment_sequential).
-
-                    order_reviews(review_id [PK], order_id [FK: orders.order_id], review_score, review_comment_title, review_comment_message, review_creation_date, review_answer_timestamp): Has reviews for each order including score, title, message, date and answer from seller timestamp.
-
-                    geolocation(zip_code [PK], lat, lang, city, state): Has location information for each zip code.
-
-                    product_category_name_translation(category_name [PK], category_name_english): Has translation for category from portugese to english.
-
-                    products(product_id [PK], category_name [FK: product_category_name_translation.category_name], name_length, description_length, photo_qty, weight_g, length_cm, height_cm, width_cm): Has product information including category in portugese, product name length, product description length, number of photos, weight of item and dimensions of item.
-
-                    sellers(seller_id [PK], zip_code [FK: geolocation.zip_code], city, state): Has inforation on seller including address information.
-
-                    order_items(order_id [FK: orders.order_id], order_item_id [PK], product_id [FK: products.product_id], 
-                    seller_id [FK: sellers.seller_id], shipping_limit_date, price, freight_value): Has item information for each order including item number, product id, seller id, limit date for seller to hand over item to carrier, item price and item freight value item (if an order has more than one item the freight value is splitted between items)."   
-
-
-                If you think that the user input is outside the scope of this schema then throw an error out of scope. 
-                Convert the user input into an executable SQL query for the given database without any explanation.
-                """
+                'content' : sys_message
             },
             {
             'role' : 'user',
-            'content' : f'{query} with columns names {columns}'
+            'content' : f'{query}'
             }])
-    return (completion.choices[0].message.content).replace('sql\n', '').replace('```', '')
+    completion_num = GeminiClient.chat.completions.create(model = 'gemini-1.5-flash',
+        messages = [
+            {
+                'role' : 'system',
+                'content' : sys_message
+            },
+            {
+            'role' : 'user',
+            'content' : f'{query} with column output {columns}'
+            }])
+    
+    completion_name = GeminiClient.chat.completions.create(model = 'gemini-1.5-flash',
+        messages = [
+            {
+                'role' : 'system',
+                'content' : sys_message
+            },
+            {
+            'role' : 'user',
+            'content' : f'{query} with {len(columns)} columns'
+            }])
+    
+    GeminiQuery, NumQuery, NameQuery = (completion_base.choices[0].message.content).replace('sql\n', '').replace('```',''), (completion_num.choices[0].message.content).replace('sql\n', '').replace('```',''), (completion_name.choices[0].message.content).replace('sql\n', '').replace('```','')
+    return GeminiQuery, NumQuery, NameQuery
 
 
 @app.post('/query')
@@ -95,9 +97,9 @@ def query():
 
     #After querying the data we want to extract the column names and send it to the gemini query. Thinking about bias: We need to make sure that the prompt we are giving Gemini isn't too biased. My solution: We try all approaches have gemini come up with its own query, give the column names from gpt to gemini, give only the number of columns from gemini. For the intersection and union we can just use the query where we give the column names.
     
-    GeminiQuery = getGeminiCompletion(request.json['query'])
+    GeminiQuery, NumQuery, NameQuery = getGeminiCompletion(request.json['query'])
     
-    UnionQuery = f'({GPTQuery}) UNION ({GeminiQuery}))'
+    UnionQuery = f'({GPTQuery}) UNION ({NameQuery}))'
     IntersectionQuery = f'({GPTQuery}) INTERSECTION ({GeminiQuery})'
     return jsonify({'GPTQuery': GPTQuery, 'GeminiQuery': GeminiQuery})
 
@@ -221,8 +223,8 @@ def test():
         'gemini_num' : gemini_num,
         "GPTQuery" :  "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n",
         "GeminiQuery" : "SELECT\n  c.customer_unique_id\nFROM customers AS c\nJOIN orders AS o\n  ON c.customer_id = o.customer_id\nJOIN order_payments AS op\n  ON o.order_id = op.order_id\nGROUP BY\n  c.customer_unique_id\nORDER BY\n  SUM(op.payment_value) DESC\nLIMIT 100;\n\n",
-        "GeminiNumQuery" : "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n",
-        "GeminiNameQuery" : "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n",
+        "NumQuery" : "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n",
+        "NameQuery" : "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n",
         "IntersectionQuery" : "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n",
         "UnionQuery" : "SELECT c.customer_id, SUM(p.payment_value) AS total_spent\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_payments p ON o.order_id = p.order_id\nGROUP BY c.customer_id\nORDER BY total_spent DESC\nLIMIT 100;\n"
     }

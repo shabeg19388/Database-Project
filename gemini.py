@@ -6,7 +6,7 @@ load_dotenv()
 GeminiClient = OpenAI(api_key = os.environ['GEMINI_API_KEY'], base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
 GPTClient = OpenAI(api_key = os.environ['OPEN_API_KEY'])
 def getGeminicompletion(query : str)  -> str:
-    completion = GeminiClient.chat.completions.create(model = 'gemini-1.5-flash',
+    completion = (GeminiClient.chat.completions.create(model = 'gemini-1.5-flash',
         messages = [
             {
                 'role' : 'system',
@@ -42,17 +42,10 @@ def getGeminicompletion(query : str)  -> str:
             {
             'role' : 'user',
             'content' : query
-            }])
-    return (completion.choices[0].message.content).replace('sql\n', '').replace('```', '')
+            }]).choices[0].message.content).replace('sql\n', '').replace('```','')
+    return completion
 
-# print(getGeminicompletion('Find the product that is most popular in Sao Paulo'))
-
-def getGPTcompletion(query : str)  -> str:
-    completion = GPTClient.chat.completions.create(model = 'gpt-4o-mini',
-        messages = [
-            {
-                'role' : 'system',
-                'content' : """Give the SQL query needed to resolve a user input. There is no need for explanation or anything just return the query compatible with mySQL. 
+sys_message = """Give the SQL query needed to resolve a user input. There is no need for explanation or anything just return the query compatible with mySQL. 
                 The database is a Brazilian e-commerce database from O-List (in English). Only return the SQL query given the user input.
                 The schema for the database is:
                     "customers(customer_id [PK], customer_unique_id, zip_code [FK: geolocation.zip_code], city, state): Has customer id and address information. 
@@ -76,10 +69,17 @@ def getGPTcompletion(query : str)  -> str:
 
 
                 If you think that the user input is outside the scope of this schema then throw an error out of scope. 
-                Convert the user input into a SQL query for the given database without any explanation.
-                
+                Convert the user input into an executable SQL query for the given database without any explanation.
+
                 Return the resulting query in compact SQL.
                 """
+
+def getGPTcompletion(query : str)  -> str:
+    completion = GPTClient.chat.completions.create(model = 'gpt-4o-mini',
+        messages = [
+            {
+                'role' : 'system',
+                'content' : sys_message
             },
             {
             'role' : 'user',
@@ -88,9 +88,4 @@ def getGPTcompletion(query : str)  -> str:
     
     return (completion.choices[0].message.content).replace('sql\n', '').replace('```','')
 
-gpt = getGPTcompletion('Find the seller and the product category with the slowest delivery times')
-
-columns = ('seller_id', 'category_name', 'avg_delivery_time')
-
-gemini = getGeminicompletion('Find the seller and the product category with the slowest delivery times')
-print(f'({gpt}) UNION ({gemini})')
+print(getGPTcompletion('Find the most popular product in March'))
