@@ -33,3 +33,8 @@ main {
 .schema-accordian {
     margin-top : 20px;
 }
+
+.p-accordion-content {
+    padding-bottom: 0px;
+    padding-top: 0px;
+}

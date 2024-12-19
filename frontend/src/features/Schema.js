@@ -271,7 +271,7 @@ export const Schema = () => {
     return(
         <>
              <Accordion className='schema-accordian' activeIndex={[]}>
-                <AccordionTab header='Schema'>
+                <AccordionTab header='Schema' className="accord-tab">
                     <TreeTable className= 'schema-tree' value={nodes} tableStyle={{minWidth : "20rem"}}>
                         <Column field = "name" header = "Schema" expander></Column>
                     </TreeTable>

@@ -40,7 +40,7 @@ const Form = () => {
         content = (
             <>
                 <Accordion className='queries-accordian'>
-                    <AccordionTab header='Queries'>
+                    <AccordionTab header='Queries' className='accord-tab'>
                         <QueryTree data={data}/>
                     </AccordionTab>
                 </Accordion>

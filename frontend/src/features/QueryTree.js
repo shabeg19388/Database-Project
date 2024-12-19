@@ -9,7 +9,7 @@ export const QueryTree = ({data}) => {
             {
                 key: i+'-0',
                  data : {
-                    name : <div style={{whiteSpace : 'pre', marginTop : "-30px", marginLeft: '65px'}}>{queries[key]}</div>}}]
+                    name : <div style={{whiteSpace : 'pre', marginTop : "-50px", marginLeft: '65px'}}>{queries[key]}</div>}}]
             }
     ))
     return(
