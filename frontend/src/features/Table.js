@@ -2,6 +2,11 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 
 export const Table = ({data}, title) => {
+    if(!data || data.length === 0){
+        return (
+            <Column key = {title+'-0'} header = 'No data'></Column>
+        )
+    }
     const columns = Object.keys(data[0]).map(
         (key) => ({
             field : key,

@@ -18,15 +18,15 @@ export const Schema = () => {
                 },
                 {
                     key: '0-2',
-                    data: {name: "zip_code"}
+                    data: {name: "customer_zip_code_prefix"}
                 },
                 {
                     key: '0-3',
-                    data: {name: "city"}
+                    data: {name: "customer_city"}
                 },
                 {
                     key: '0-4',
-                    data: {name: "state"}
+                    data: {name: "customer_state"}
                 }
             ]
         },
@@ -138,11 +138,11 @@ export const Schema = () => {
                 },
                 {
                     key: '4-1',
-                    data: {name: "lat"}
+                    data: {name: "latitude"}
                 },
                 {
                     key: '4-2',
-                    data: {name: "lang"}
+                    data: {name: "longitude"}
                 },
                 {
                     key: '4-3',
@@ -178,35 +178,35 @@ export const Schema = () => {
                 },
                 {
                     key: '6-1',
-                    data: {name: "category_name"}
+                    data: {name: "product_category_name"}
                 },
                 {
                     key: '6-2',
-                    data: {name: "name_length"}
+                    data: {name: "product_name_lenght"}
                 },
                 {
                     key: '6-3',
-                    data: {name: "description_length"}
+                    data: {name: "product_description_lenght"}
                 },
                 {
                     key: '6-4',
-                    data: {name: "photo_qty"}
+                    data: {name: "product_photos_qty"}
                 },
                 {
                     key: '6-5',
-                    data: {name: "weight_g"}
+                    data: {name: "product_weight_g"}
                 },
                 {
                     key: '6-6',
-                    data: {name: "length_cm"}
+                    data: {name: "product_length_cm"}
                 },
                 {
                     key: '6-7',
-                    data: {name: "height_cm"}
+                    data: {name: "product_height_cm"}
                 },
                 {
                     key: '6-8',
-                    data: {name: "width_cm"}
+                    data: {name: "product_width_cm"}
                 }
             ]
         },
@@ -259,6 +259,10 @@ export const Schema = () => {
                 },
                 {
                     key: '8-5',
+                    data: {name: "price"}
+                },
+                {
+                    key: '8-6',
                     data: {name: "freight_value"}
                 }
             ]
