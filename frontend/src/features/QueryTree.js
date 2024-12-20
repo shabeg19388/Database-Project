@@ -1,5 +1,6 @@
 import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
+//Creates query tree object for each returned SQL query
 export const QueryTree = ({data}) => {
     const queries = {'GPT' : data.GPTQuery, 'Gemini' : data.GeminiQuery, 'Gemini + NumCol': data.NumQuery, 'Gemini + NameCol': data.NameQuery, 'Intersection' : data.IntersectionQuery, 'Union': data.UnionQuery}
     const nodes = Object.keys(queries).map((key, i) => ({

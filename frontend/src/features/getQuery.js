@@ -1,3 +1,4 @@
+// Performs fetch function for the backend enpoint. Interacts with Mutation in fronntend to only query when form is submitted
 export const getQuery = async (query) => {
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');

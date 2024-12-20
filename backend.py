@@ -13,7 +13,7 @@ CORS(app, origins = ['http://localhost:3000'])
 GPTClient = OpenAI(api_key = os.environ['OPEN_API_KEY'])
 GeminiClient = OpenAI(api_key = os.environ['GEMINI_API_KEY'], base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
 
-#have to fix schema and add examples also can add an example row from each table. Also fix schema in frontend.
+#prompt for LLM SQL generation includes schema with types, descriptions of tables, example table rows and syntaxical requirements 
 sys_message = """Give the SQL query needed to resolve a user input. There is no need for explanation or anything just return the query compatible with mySQL. 
                 The database is a Brazilian e-commerce database from O-List (in English). Only return the SQL query given the user input.
                
@@ -175,6 +175,7 @@ sys_message = """Give the SQL query needed to resolve a user input. There is no 
 
                 Return the resulting query in compact SQL.
                 """
+#Queries respective LLM to translate English -> SQL
 def getGPTCompletion(query : str)  -> str:
     completion = GPTClient.chat.completions.create(model = 'gpt-4o-mini',
         messages = [
@@ -224,6 +225,7 @@ def getGeminiCompletion(query : str, columns : list)  -> str:
     GeminiQuery, NumQuery, NameQuery = (completion_base.choices[0].message.content).replace('sql\n', '').replace('```',''), (completion_num.choices[0].message.content).replace('sql\n', '').replace('```',''), (completion_name.choices[0].message.content).replace('sql\n', '').replace('```','')
     return GeminiQuery, NumQuery, NameQuery
 
+#Prompt to reparmetrize intersection operation into a RDS compatible MySQL query
 intersection_msg = """
         You will be given an intersection SQL query of two SQL queries from LLMs and I would like you to reformat that query without any INTERSECTION operations you can use any method such as JOIN or EXISTS to work around the operation. Do not change the meaning of the query. Do not output any uneccessary attributes except the ones mention in the query.
         The schema for the database is:
@@ -339,7 +341,6 @@ intersection_msg = """
                 Convert the user input into an executable SQL query for the given database without any explanation.
 
                 Return the resulting query in compact SQL without any intersections or union operations.
-
 """
 
 def getIntersectionCompletion(query : str) -> str:
@@ -357,7 +358,8 @@ def getIntersectionCompletion(query : str) -> str:
 
 
 
-
+#Given a SQL query fetches single dicitionary dataset formatted from backend as well as a list of column names.
+#Used mainly for the initial GPT query
 def fetchSingleSQLQuery(query):
     try:    
         sqlConnect = mysql.connector.connect(user='admin', password = os.environ['RDS_PASSWORD'], host=os.environ['RDS_HOST'], database = 'olist')
@@ -373,8 +375,7 @@ def fetchSingleSQLQuery(query):
         sqlConnect.close()
         return columns, result
 
-
-
+#Fetches multiple dictionary datasets from a list of queries, used for the remaining SQL queries. Returns datasets as a list.
 def fetchMultipleSQLQueries(queries):
     try:    
         sqlConnect = mysql.connector.connect(user='admin', password = os.environ['RDS_PASSWORD'], host=os.environ['RDS_HOST'], database = 'olist')
@@ -405,7 +406,7 @@ def fetchMultipleSQLQueries(queries):
 
 
 
-
+#endpoint for post requests to generate SQL queries from LLMs returns a single JSON object with all pertinent SQL query and dataset information
 @app.post('/query')
 def query():
     GPTQuery = getGPTCompletion(request.json['query'])
@@ -438,7 +439,7 @@ def query():
     
     return jsonify(response)
 
-
+#dummy test endpoint
 @app.post('/test')
 def test():
     print(request.json)

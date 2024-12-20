@@ -1,3 +1,4 @@
+#attempted to create a meausure of accuracy by comparing each LLM-generated dataset to an expected SQL query dataset
 import json 
 def similarity_score(relation1_json, relation2_json, weights=None):
     from collections import defaultdict

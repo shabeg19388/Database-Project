@@ -1,6 +1,6 @@
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-
+//Creates a dynamic table given any JSON set
 export const Table = ({data}, title) => {
     if(!data || data.length === 0){
         return (

@@ -8,6 +8,7 @@ import { Button } from 'primereact/button';
 import {QueryTree} from './QueryTree'
 import { Schema } from './Schema';
 import { Accordion, AccordionTab } from 'primereact/accordion';
+// Takes and interacts with the backend using TanStackQuery Mutations and processes return data
 const Form = () => {
     const [newQuery, setNewQuery] = useState('');
     const [data, setData] = useState(null);
@@ -34,7 +35,7 @@ const Form = () => {
 
     );
     
-    
+    //Visualized components for returned data from backend including Queries Tree Visualization and Dynamic Tables
     let content
     if(data){
         console.log(data)
@@ -69,7 +70,7 @@ const Form = () => {
         )
     }
 
-    
+    //Structure of main web page
     return(
         <main>
             {search}

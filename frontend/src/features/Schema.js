@@ -2,6 +2,7 @@ import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
 import { Accordion } from "primereact/accordion";
 import { AccordionTab } from "primereact/accordion";
+//Creates Schema dropdown with TreeTable
 export const Schema = () => {
     const nodes = [
         {   
