@@ -1,7 +1,14 @@
 import {getQuery} from './getQuery';
-import { useState } from 'react';
+import { useState} from 'react';
 import { useMutation} from "@tanstack/react-query";
-
+import {Table} from './Table';
+import { TabView, TabPanel } from 'primereact/tabview';
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
+import {QueryTree} from './QueryTree'
+import { Schema } from './Schema';
+import { Accordion, AccordionTab } from 'primereact/accordion';
+// Takes and interacts with the backend using TanStackQuery Mutations and processes return data
 const Form = () => {
     const [newQuery, setNewQuery] = useState('');
     const [data, setData] = useState(null);
@@ -16,32 +23,58 @@ const Form = () => {
         if(newQuery.trim()){
             formMutation.mutate(newQuery.trim());
         };
-        setNewQuery('')
     };
 
     const search = (
         <form onSubmit = {handleSubmit}>
-            <div>
-                <label htmlFor='queryInputy'>Enter your english query!</label>
-                <input type='text' id = 'query' value = {newQuery} onChange = {(e) => setNewQuery(e.target.value)}></input>
+            <div style={{display : "flex", alignItems : 'center', justifyContent : 'center', marginTop: '30px', marginBottom : '0px'}}>
+                <InputText value={newQuery} className="p-inputtext-lg" onChange = {(e) => setNewQuery(e.target.value)} placeholder='Enter an English query!'/>
+                <Button label='Submit' loading ={formMutation.isPending}/>
             </div>
-            <button type ='submit'>Submit</button>
         </form>
+
     );
-
+    
+    //Visualized components for returned data from backend including Queries Tree Visualization and Dynamic Tables
     let content
-    if(formMutation.isPending){
-        content = (<h1>Sending Query...</h1>)
-    }
-    else{
+    if(data){
         console.log(data)
-        console.log(data['gpt'])
+        content = (
+            <>
+                <Accordion className='queries-accordian'>
+                    <AccordionTab header='Queries' className='accord-tab'>
+                        <QueryTree data={data}/>
+                    </AccordionTab>
+                </Accordion>
+                <TabView>
+                    <TabPanel header='GPT'>
+                        <Table data = {data['gpt']} title='gpt'/>
+                    </TabPanel>
+                    <TabPanel header='Gemini'>
+                        <Table data={data['gemini']} title='gemini'/>
+                    </TabPanel>
+                    <TabPanel header='Gemini + NumCol'>
+                        <Table data={data['gemini_num']} title='gemini_num' />
+                    </TabPanel>
+                    <TabPanel header='Gemini + NameCol'>
+                        <Table data={data['gemini_name']} title='gemini_name'/>
+                    </TabPanel>
+                    <TabPanel header='Intersection'>
+                        <Table data={data['intersection']} title='intersection'/>
+                    </TabPanel>
+                    <TabPanel header='Union'>
+                        <Table data={data['union']} title='union'/>
+                    </TabPanel>
+                </TabView>
+            </>
+        )
     }
 
-
+    //Structure of main web page
     return(
         <main>
             {search}
+            <Schema/>
             {content}
         </main>
     );
